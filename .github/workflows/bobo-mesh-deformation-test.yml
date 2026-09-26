@@ -27,4 +27,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bobo-mesh-deformation-test
-          path: output/bobo_mesh_deformation_test/
+          path: |
+            output/bobo_mesh_deformation_test/bobo_mesh_deformation_test.mp4
+            output/bobo_mesh_deformation_test/mesh_manifest.json
