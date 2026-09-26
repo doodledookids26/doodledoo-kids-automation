@@ -1,0 +1,45 @@
+{
+  "character": "Bobo the Bear",
+  "source_reference": "../bobo.png",
+  "rig_type": "2d_cutout",
+  "status": "awaiting_layer_assets",
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "transparent_background": true
+  },
+  "layers": [
+    "head.png",
+    "left_ear.png",
+    "right_ear.png",
+    "torso.png",
+    "left_upper_arm.png",
+    "left_lower_arm.png",
+    "right_upper_arm.png",
+    "right_lower_arm.png",
+    "left_hand.png",
+    "right_hand.png",
+    "left_upper_leg.png",
+    "left_lower_leg.png",
+    "right_upper_leg.png",
+    "right_lower_leg.png",
+    "left_foot.png",
+    "right_foot.png",
+    "eyes.png",
+    "mouth.png"
+  ],
+  "animation_tests": [
+    "idle",
+    "look_left_right",
+    "blink",
+    "wave",
+    "walk",
+    "talk"
+  ],
+  "consistency": {
+    "preserve_original_design": true,
+    "preserve_clothing": true,
+    "preserve_colors": true,
+    "preserve_proportions": true
+  }
+}
