@@ -1,0 +1,28 @@
+name: Bobo Rig Blueprint Review
+
+on:
+  workflow_dispatch:
+
+jobs:
+  blueprint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Pillow
+        run: pip install Pillow
+      - name: Build Bobo joint blueprint
+        run: python scripts/create_bobo_rig_blueprint.py
+      - name: Verify
+        run: |
+          test -s output/bobo_rig_blueprint/bobo_joint_blueprint.png
+          test -s output/bobo_rig_blueprint/bobo_rig_spec.json
+      - name: Upload blueprint
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-rig-blueprint-review
+          path: output/bobo_rig_blueprint/
