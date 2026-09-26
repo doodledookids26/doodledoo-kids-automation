@@ -47,9 +47,17 @@ jobs:
       - name: Create short test video
         run: python scripts/create_video.py
 
+      - name: Generate test narration
+        run: python scripts/generate_narration.py
+
+      - name: Create narrated test video
+        run: python scripts/create_narrated_video.py
+
       - name: Verify test video
         run: |
           test -f output/DDK001_test_video.mp4
+          test -f output/DDK001_test_narration.mp3
+          test -f output/DDK001_test_video_narrated.mp4
           ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/DDK001_test_video.mp4
 
       - name: Display Gemini script
@@ -62,3 +70,5 @@ jobs:
           path: |
             output/*.json
             output/DDK001_test_video.mp4
+            output/DDK001_test_narration.mp3
+            output/DDK001_test_video_narrated.mp4
