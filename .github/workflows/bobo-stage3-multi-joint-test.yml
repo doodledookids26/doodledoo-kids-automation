@@ -1,0 +1,44 @@
+name: Bobo Stage 3 Multi Joint Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bobo-stage3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build Stage-3 multi-joint rig
+        run: python scripts/build_bobo_rig_stage3.py
+
+      - name: Create Stage-3 animation test
+        run: python scripts/create_bobo_stage3_animation_test.py
+
+      - name: Verify outputs
+        run: |
+          test -s output/bobo_rig_stage3/reconstructed_preview.png
+          test -s output/bobo_rig_stage3/rig_manifest.json
+          test -s output/bobo_stage3_animation_test.mp4
+
+      - name: Upload Stage-3 test artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-stage3-multi-joint-test
+          path: |
+            output/bobo_rig_stage3/
+            output/bobo_stage3_animation_test.mp4
