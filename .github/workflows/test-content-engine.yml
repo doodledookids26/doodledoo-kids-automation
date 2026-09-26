@@ -17,9 +17,11 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Run content engine
+      - name: Generate script request
         run: python scripts/generate_script.py
 
       - name: Generate Gemini script
@@ -27,19 +29,17 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/generate_gemini_script.py
 
-      - name: Verify generated file
+      - name: Verify generated files
         run: |
           test -f output/DDK001_script_request.json
-          echo "Generated file successfully."
+          test -f output/DDK001_script.json
+          echo "All generated files verified successfully."
 
-      - name: Display generated request
-        run: cat output/DDK001_script_request.json
+      - name: Display Gemini script
+        run: cat output/DDK001_script.json
 
       - name: Save generated JSON
         uses: actions/upload-artifact@v4
         with:
           name: DDK001-generated-content
           path: output/*.json
-
-      - name: Display generated request
-        run: cat output/DDK001_script_request.json
