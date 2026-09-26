@@ -1,0 +1,100 @@
+{
+  "world": "Happy Meadow",
+  "visual_style": "friendly stylized 3D preschool animation with rounded shapes, expressive eyes, bright pleasant colors, simple clean environments and safe non-scary presentation",
+
+  "characters": [
+    {
+      "id": "bobo",
+      "name": "Bobo the Bear",
+      "role": "main_mascot",
+      "personality": [
+        "curious",
+        "kind",
+        "playful",
+        "brave"
+      ],
+      "appearance": {
+        "species": "bear",
+        "fur_color": "brown",
+        "shirt_color": "yellow",
+        "shorts_color": "blue"
+      }
+    },
+    {
+      "id": "mimi",
+      "name": "Mimi the Bunny",
+      "role": "friend",
+      "personality": [
+        "energetic",
+        "cheerful",
+        "clever",
+        "dancer"
+      ],
+      "appearance": {
+        "species": "bunny",
+        "primary_color": "pink"
+      }
+    },
+    {
+      "id": "piku",
+      "name": "Piku the Panda",
+      "role": "friend",
+      "personality": [
+        "curious",
+        "smart",
+        "question_lover"
+      ],
+      "appearance": {
+        "species": "panda",
+        "accent_colors": [
+          "green",
+          "orange"
+        ]
+      }
+    },
+    {
+      "id": "golu",
+      "name": "Golu the Baby Elephant",
+      "role": "friend",
+      "personality": [
+        "gentle",
+        "funny",
+        "a_little_clumsy"
+      ],
+      "appearance": {
+        "species": "baby elephant",
+        "accent_colors": [
+          "orange",
+          "green"
+        ]
+      }
+    },
+    {
+      "id": "toto",
+      "name": "Toto the Little Bird",
+      "role": "friend",
+      "personality": [
+        "happy",
+        "musical",
+        "loves_to_fly"
+      ],
+      "appearance": {
+        "species": "little bird",
+        "accent_colors": [
+          "yellow",
+          "blue"
+        ]
+      }
+    }
+  ],
+
+  "consistency_rules": [
+    "Keep character appearance consistent across every scene.",
+    "Do not change clothing colors.",
+    "Do not change species.",
+    "Do not introduce scary or threatening expressions.",
+    "Keep proportions suitable for preschool children.",
+    "Use friendly expressive faces.",
+    "Maintain the Happy Meadow visual identity."
+  ]
+}
