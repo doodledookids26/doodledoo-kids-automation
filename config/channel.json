@@ -1,0 +1,18 @@
+{
+  "channel_name": "DoodleDoo Kids",
+  "handle": "@doodledookids-d26",
+  "channel_id": "UCixZLRGOe7kyUsH7Kli42Xg",
+  "primary_language": "English",
+  "secondary_language": "Hindi",
+  "target_age": "2-7",
+  "world": "Happy Meadow",
+  "main_character": "Bobo",
+  "tagline": "Sing • Learn • Play",
+  "content_formats": [
+    "long_video",
+    "shorts"
+  ],
+  "workflow_mode": "TEST",
+  "default_category": "Kids",
+  "default_visibility": "private"
+}
