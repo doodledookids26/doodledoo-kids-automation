@@ -50,7 +50,12 @@ def main():
     with open(SCENES, "r", encoding="utf-8") as f:
         scenes = json.load(f)
 
-    if not scenes:
+    # generate_scenes.py stores the scene list inside a top-level "scenes" object.
+    # Accept both that format and a raw list so the video step is robust.
+    if isinstance(scenes, dict):
+        scenes = scenes.get("scenes", [])
+
+    if not isinstance(scenes, list) or not scenes:
         raise RuntimeError("No scenes found in DDK001_scenes.json")
 
     bg = cover(load_rgba(os.path.join(ROOT, "assets", "backgrounds", "happy_meadow.png")), (W, H))
