@@ -1,1 +1,2 @@
-google-genai\nPillow\n
+google-genai
+Pillow
