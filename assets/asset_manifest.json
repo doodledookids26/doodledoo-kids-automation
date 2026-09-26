@@ -1,0 +1,99 @@
+{
+  "version": "1.0",
+
+  "characters": {
+    "bobo": {
+      "name": "Bobo the Bear",
+      "file": "characters/bobo.png",
+      "description": "Cute friendly brown bear wearing a yellow shirt and blue shorts",
+      "required": true
+    },
+
+    "mimi": {
+      "name": "Mimi the Bunny",
+      "file": "characters/mimi.png",
+      "description": "Cheerful pink bunny with a friendly preschool appearance",
+      "required": true
+    },
+
+    "piku": {
+      "name": "Piku the Panda",
+      "file": "characters/piku.png",
+      "description": "Curious smart panda with green and orange accents",
+      "required": true
+    },
+
+    "golu": {
+      "name": "Golu the Baby Elephant",
+      "file": "characters/golu.png",
+      "description": "Gentle funny baby elephant with orange and green accents",
+      "required": true
+    },
+
+    "toto": {
+      "name": "Toto the Little Bird",
+      "file": "characters/toto.png",
+      "description": "Happy musical little bird with yellow and blue accents",
+      "required": true
+    }
+  },
+
+  "backgrounds": {
+    "happy_meadow": {
+      "name": "Happy Meadow",
+      "file": "backgrounds/happy_meadow.png",
+      "required": true
+    },
+
+    "bobos_house": {
+      "name": "Bobo's House",
+      "file": "backgrounds/bobos_house.png",
+      "required": false
+    },
+
+    "rainbow_playground": {
+      "name": "Rainbow Playground",
+      "file": "backgrounds/rainbow_playground.png",
+      "required": false
+    },
+
+    "little_star_school": {
+      "name": "Little Star School",
+      "file": "backgrounds/little_star_school.png",
+      "required": false
+    },
+
+    "sunny_farm": {
+      "name": "Sunny Farm",
+      "file": "backgrounds/sunny_farm.png",
+      "required": false
+    },
+
+    "magic_forest": {
+      "name": "Magic Forest",
+      "file": "backgrounds/magic_forest.png",
+      "required": false
+    },
+
+    "rainbow_lake": {
+      "name": "Rainbow Lake",
+      "file": "backgrounds/rainbow_lake.png",
+      "required": false
+    },
+
+    "happy_meadow_town": {
+      "name": "Happy Meadow Town",
+      "file": "backgrounds/happy_meadow_town.png",
+      "required": false
+    }
+  },
+
+  "style": {
+    "type": "friendly stylized 3D preschool animation",
+    "shape_language": "rounded and soft",
+    "expression": "warm and highly expressive",
+    "environment": "clean, colorful and simple",
+    "lighting": "bright pleasant daylight",
+    "safety": "non-scary and preschool appropriate"
+  }
+}
