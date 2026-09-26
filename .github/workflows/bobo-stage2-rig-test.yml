@@ -1,0 +1,42 @@
+name: Bobo Stage 2 Rig Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rig-stage2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install FFmpeg
+        uses: FedericoCarbonara/setup-ffmpeg@v3
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build Stage-2 Bobo rig
+        run: python scripts/build_bobo_rig_stage2.py
+
+      - name: Verify Stage-2 outputs
+        run: |
+          test -s output/bobo_rig_stage2/base.png
+          test -s output/bobo_rig_stage2/head.png
+          test -s output/bobo_rig_stage2/left_arm.png
+          test -s output/bobo_rig_stage2/right_arm.png
+          test -s output/bobo_rig_stage2/left_leg.png
+          test -s output/bobo_rig_stage2/right_leg.png
+          test -s output/bobo_rig_stage2/reconstructed_preview.png
+          test -s output/bobo_rig_stage2/rig_manifest.json
+
+      - name: Upload Stage-2 rig
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-stage2-rig
+          path: output/bobo_rig_stage2/
