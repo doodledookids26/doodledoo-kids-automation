@@ -16,8 +16,16 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
       - name: Run content engine
         run: python scripts/generate_script.py
+
+      - name: Generate Gemini script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/generate_gemini_script.py
 
       - name: Verify generated file
         run: |
@@ -30,8 +38,8 @@ jobs:
       - name: Save generated JSON
         uses: actions/upload-artifact@v4
         with:
-          name: DDK001-script-request
-          path: output/DDK001_script_request.json
+          name: DDK001-generated-content
+          path: output/*.json
 
       - name: Display generated request
         run: cat output/DDK001_script_request.json
