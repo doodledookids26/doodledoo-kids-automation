@@ -29,10 +29,14 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/generate_gemini_script.py
 
+      - name: Generate scene plan
+        run: python scripts/generate_scenes.py        
+
       - name: Verify generated files
         run: |
           test -f output/DDK001_script_request.json
           test -f output/DDK001_script.json
+          test -f output/DDK001_scenes.json
           echo "All generated files verified successfully."
 
       - name: Display Gemini script
