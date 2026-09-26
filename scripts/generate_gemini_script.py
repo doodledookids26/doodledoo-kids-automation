@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from pathlib import Path
 
 from google import genai
@@ -12,22 +13,20 @@ OUTPUT_DIR = ROOT / "output"
 OUTPUT_FILE = OUTPUT_DIR / "DDK001_script.json"
 
 
+MODELS = [
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite"
+]
+
+
 def load_json(path):
     with open(path, "r", encoding="utf-8") as file:
         return json.load(file)
 
 
-def main():
-    api_key = os.environ.get("GEMINI_API_KEY")
-
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is not available.")
-
-    request = load_json(REQUEST_FILE)
-
-    client = genai.Client(api_key=api_key)
-
-    prompt = f"""
+def build_prompt(request):
+    return f"""
 Create an original preschool children's rhyme/story script.
 
 You are writing for the YouTube channel:
@@ -80,76 +79,218 @@ Requirements:
 Return ONLY valid JSON.
 """
 
-    schema = {
-        "type": "object",
-        "properties": {
-            "episode_id": {"type": "string"},
-            "title": {"type": "string"},
-            "estimated_duration_seconds": {"type": "integer"},
-            "learning_objective": {"type": "string"},
-            "narrator_intro": {"type": "string"},
-            "scenes": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "scene_number": {"type": "integer"},
-                        "visual_description": {"type": "string"},
-                        "narration": {"type": "string"},
-                        "dialogue": {"type": "string"},
-                        "song_or_rhyme": {"type": "string"},
-                        "child_interaction": {"type": "string"}
+
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "episode_id": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "estimated_duration_seconds": {
+            "type": "integer"
+        },
+        "learning_objective": {
+            "type": "string"
+        },
+        "narrator_intro": {
+            "type": "string"
+        },
+        "scenes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "scene_number": {
+                        "type": "integer"
                     },
-                    "required": [
-                        "scene_number",
-                        "visual_description",
-                        "narration",
-                        "dialogue",
-                        "song_or_rhyme",
-                        "child_interaction"
-                    ]
-                }
-            },
-            "ending": {"type": "string"},
-            "safety_notes": {
-                "type": "array",
-                "items": {"type": "string"}
+                    "visual_description": {
+                        "type": "string"
+                    },
+                    "narration": {
+                        "type": "string"
+                    },
+                    "dialogue": {
+                        "type": "string"
+                    },
+                    "song_or_rhyme": {
+                        "type": "string"
+                    },
+                    "child_interaction": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "scene_number",
+                    "visual_description",
+                    "narration",
+                    "dialogue",
+                    "song_or_rhyme",
+                    "child_interaction"
+                ]
             }
         },
-        "required": [
-            "episode_id",
-            "title",
-            "estimated_duration_seconds",
-            "learning_objective",
-            "narrator_intro",
-            "scenes",
-            "ending",
-            "safety_notes"
-        ]
-    }
-
-    response = client.models.generate_content(
-        model="gemini-3.8-flash",
-        contents=prompt,
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": schema,
-            "temperature": 0.8
+        "ending": {
+            "type": "string"
+        },
+        "safety_notes": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         }
+    },
+    "required": [
+        "episode_id",
+        "title",
+        "estimated_duration_seconds",
+        "learning_objective",
+        "narrator_intro",
+        "scenes",
+        "ending",
+        "safety_notes"
+    ]
+}
+
+
+def generate_with_retry(client, prompt):
+
+    last_error = None
+
+    for model in MODELS:
+
+        print("")
+        print("Trying Gemini model:", model)
+
+        for attempt in range(1, 4):
+
+            try:
+                print(
+                    "Attempt",
+                    attempt,
+                    "of 3"
+                )
+
+                response = client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json",
+                        "response_schema": SCHEMA
+                    }
+                )
+
+                print("Success with model:", model)
+
+                return response
+
+            except Exception as error:
+
+                last_error = error
+
+                print(
+                    "Model failed:",
+                    model,
+                    "Attempt:",
+                    attempt
+                )
+
+                print(
+                    "Error:",
+                    str(error)
+                )
+
+                if attempt < 3:
+                    wait_seconds = attempt * 10
+
+                    print(
+                        "Waiting",
+                        wait_seconds,
+                        "seconds before retry..."
+                    )
+
+                    time.sleep(wait_seconds)
+
+        print(
+            "Moving to next Gemini model..."
+        )
+
+    raise RuntimeError(
+        "All Gemini models failed. "
+        f"Last error: {last_error}"
     )
 
-    result = json.loads(response.text)
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+def main():
 
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as file:
-        json.dump(result, file, ensure_ascii=False, indent=2)
+    api_key = os.environ.get("GEMINI_API_KEY")
 
-    print("Gemini script generated successfully.")
-    print("Episode:", result["episode_id"])
-    print("Title:", result["title"])
-    print("Scenes:", len(result["scenes"]))
-    print("Output:", OUTPUT_FILE)
+    if not api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY is not available."
+        )
+
+    request = load_json(REQUEST_FILE)
+
+    client = genai.Client(
+        api_key=api_key
+    )
+
+    prompt = build_prompt(request)
+
+    response = generate_with_retry(
+        client,
+        prompt
+    )
+
+    result = json.loads(
+        response.text
+    )
+
+    OUTPUT_DIR.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    with open(
+        OUTPUT_FILE,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        json.dump(
+            result,
+            file,
+            ensure_ascii=False,
+            indent=2
+        )
+
+    print("")
+    print(
+        "Gemini script generated successfully."
+    )
+
+    print(
+        "Episode:",
+        result["episode_id"]
+    )
+
+    print(
+        "Title:",
+        result["title"]
+    )
+
+    print(
+        "Scenes:",
+        len(result["scenes"])
+    )
+
+    print(
+        "Output:",
+        OUTPUT_FILE
+    )
 
 
 if __name__ == "__main__":
