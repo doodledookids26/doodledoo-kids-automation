@@ -1,0 +1,75 @@
+{
+  "id": "DDK001",
+  "title": "Bobo's Red Ball",
+  "language": "English",
+  "hindi_title": "बोबो की लाल गेंद",
+
+  "category": "Colors",
+
+  "learning_objective": "Recognize and identify the color red",
+
+  "target_age": "2-7",
+
+  "duration_seconds": 210,
+
+  "characters": [
+    "Bobo",
+    "Mimi"
+  ],
+
+  "location": "Happy Meadow",
+
+  "story": {
+    "beginning": "Bobo is happily playing with his favorite ball in Happy Meadow.",
+    "problem": "The red ball rolls away and Bobo cannot find it.",
+    "search": "Bobo and Mimi look around the meadow and discover several colorful objects.",
+    "discovery": "Mimi helps Bobo notice the red color among the other colors.",
+    "ending": "Bobo finds his red ball and celebrates with Mimi."
+  },
+
+  "educational_points": [
+    "Recognize the color red.",
+    "Compare red with other basic colors.",
+    "Repeat the word red several times.",
+    "Encourage children to find red objects around them."
+  ],
+
+  "tone": [
+    "happy",
+    "playful",
+    "gentle",
+    "educational",
+    "interactive"
+  ],
+
+  "safety": {
+    "scary_content": false,
+    "violence": false,
+    "dangerous_behavior": false,
+    "adult_content": false,
+    "unsafe_challenges": false
+  },
+
+  "shorts": [
+    {
+      "id": "DDK001-S01",
+      "title": "Can Bobo Find His Red Ball?"
+    },
+    {
+      "id": "DDK001-S02",
+      "title": "Find Something RED!"
+    },
+    {
+      "id": "DDK001-S03",
+      "title": "Red, Red, Red Song!"
+    }
+  ],
+
+  "hindi_version": {
+    "enabled": true,
+    "title": "बोबो की लाल गेंद",
+    "language": "Hindi"
+  },
+
+  "status": "ready_for_script_generation"
+}
