@@ -26,3 +26,12 @@ jobs:
 
       - name: Display generated request
         run: cat output/DDK001_script_request.json
+
+      - name: Save generated JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: DDK001-script-request
+          path: output/DDK001_script_request.json
+
+      - name: Display generated request
+        run: cat output/DDK001_script_request.json
