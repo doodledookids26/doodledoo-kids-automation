@@ -26,6 +26,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Build Bobo rig automatically
+        run: python scripts/build_bobo_rig.py
+
+      - name: Verify Bobo rig
+        run: |
+          test -f output/bobo_rig/base.png
+          test -f output/bobo_rig/head.png
+          test -f output/bobo_rig/left_arm.png
+          test -f output/bobo_rig/right_arm.png
+          test -f output/bobo_rig/left_leg.png
+          test -f output/bobo_rig/right_leg.png
+          test -f output/bobo_rig/rig_manifest.json
+          test -f output/bobo_rig/reconstructed_preview.png
+          cat output/bobo_rig/rig_manifest.json
+
       - name: Generate script request
         run: python scripts/generate_script.py
 
@@ -74,12 +89,14 @@ jobs:
       - name: Display Gemini script
         run: cat output/DDK001_script.json
 
-      - name: Save generated content and test video
+      - name: Save generated content, rig and test video
         uses: actions/upload-artifact@v4
         with:
           name: DDK001-test-video
           path: |
             output/*.json
+            output/bobo_rig/*.png
+            output/bobo_rig/rig_manifest.json
             output/DDK001_test_video.mp4
             output/DDK001_animation_test_v2.mp4
             output/DDK001_test_narration.mp3
