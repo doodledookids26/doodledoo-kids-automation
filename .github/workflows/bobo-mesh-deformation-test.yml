@@ -1,0 +1,30 @@
+name: Bobo Mesh Deformation Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  mesh-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run continuous-image mesh deformation test
+        run: python scripts/create_bobo_mesh_deformation_test.py
+      - name: Verify
+        run: test -s output/bobo_mesh_deformation_test/bobo_mesh_deformation_test.mp4
+      - name: Upload mesh test
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-mesh-deformation-test
+          path: output/bobo_mesh_deformation_test/
