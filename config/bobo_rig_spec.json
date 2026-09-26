@@ -1,0 +1,60 @@
+{
+  "character": "Bobo the Bear",
+  "version": "5.0",
+  "purpose": "Animation rig blueprint based on the uploaded Full-Body Kinematic Rig reference.",
+  "source_artwork": "assets/characters/bobo.png",
+  "reference_principles": {
+    "body": "full-body kinematic puppet",
+    "arms": "shoulder -> elbow -> wrist/hand",
+    "legs": "hip -> knee -> ankle/foot",
+    "head": "head tilt plus optional face controls",
+    "future_controls": ["IK", "FK", "hand poses", "blink", "eyebrow", "mouth", "jaw"]
+  },
+  "joint_targets_1024x1536": {
+    "neck": [510, 650],
+    "left_shoulder": [300, 720],
+    "left_elbow": [300, 920],
+    "left_wrist": [275, 1160],
+    "right_shoulder": [735, 720],
+    "right_elbow": [735, 920],
+    "right_wrist": [800, 1160],
+    "left_hip": [365, 1160],
+    "left_knee": [365, 1330],
+    "left_ankle": [355, 1460],
+    "right_hip": [650, 1160],
+    "right_knee": [650, 1330],
+    "right_ankle": [685, 1460]
+  },
+  "layer_targets": [
+    "head.png",
+    "torso.png",
+    "left_upper_arm.png",
+    "left_lower_arm.png",
+    "left_hand.png",
+    "right_upper_arm.png",
+    "right_lower_arm.png",
+    "right_hand.png",
+    "left_upper_leg.png",
+    "left_lower_leg.png",
+    "left_foot.png",
+    "right_upper_leg.png",
+    "right_lower_leg.png",
+    "right_foot.png"
+  ],
+  "animation_tests": [
+    "idle",
+    "wave",
+    "walk",
+    "bounce",
+    "thumbs_up"
+  ],
+  "quality_gates": [
+    "Original Bobo appearance must remain unchanged.",
+    "Hands and feet must remain complete.",
+    "No visible tearing at shoulders, elbows, hips, knees, wrists or ankles.",
+    "No detached limbs.",
+    "No large holes revealed during rotation.",
+    "Movement must be clearly visible, not merely a whole-image sway.",
+    "Stage 5 is not production-approved until the animation passes visual review."
+  ]
+}
