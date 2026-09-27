@@ -50,11 +50,21 @@ blue = (
 blue = cv2.morphologyEx(blue.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
 blue = cv2.dilate(blue, np.ones((3, 3), np.uint8), iterations=1).astype(bool)
 
-leg_alpha = np.maximum(
-    layers["left_upper_leg.png"][:, :, 3],
-    layers["right_upper_leg.png"][:, :, 3],
+# Build the shorts as an alpha-preserving front layer over the exact
+# V5 base+torso underlay. Simply copying the leg alpha is not sufficient:
+# the same alpha composited above torso changes the final edge opacity.
+under = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+under.alpha_composite(Image.fromarray(layers["base.png"]))
+under.alpha_composite(Image.fromarray(layers["torso.png"]))
+under_a = np.array(under)[:, :, 3].astype(np.float32)
+target_a = src[:, :, 3].astype(np.float32)
+denom = 255.0 - under_a
+required_shorts_a = np.where(
+    denom > 1.0,
+    np.clip((target_a - under_a) / denom * 255.0, 0.0, 255.0),
+    0.0,
 )
-shorts_alpha = np.where(blue, leg_alpha, 0).astype(np.uint8)
+shorts_alpha = np.where(blue, required_shorts_a, 0.0).astype(np.uint8)
 
 shorts_rgba = np.dstack([src[:, :, :3], shorts_alpha])
 Image.fromarray(shorts_rgba).save(OUT / "hip_shorts.png")
