@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "character": "Bobo",
+  "fps": 24,
+  "presets": {
+    "idle": {
+      "duration_seconds": 4,
+      "keyframes": [
+        {"frame": 1, "pose": "neutral"},
+        {"frame": 48, "pose": "neutral_small_breath"},
+        {"frame": 96, "pose": "neutral"}
+      ]
+    },
+    "wave": {
+      "duration_seconds": 4,
+      "keyframes": [
+        {"frame": 1, "pose": "neutral"},
+        {"frame": 24, "pose": "left_arm_up"},
+        {"frame": 36, "pose": "wave_left_1"},
+        {"frame": 48, "pose": "wave_left_2"},
+        {"frame": 60, "pose": "wave_left_1"},
+        {"frame": 72, "pose": "wave_left_2"},
+        {"frame": 96, "pose": "neutral"}
+      ]
+    },
+    "bounce": {
+      "duration_seconds": 3,
+      "keyframes": [
+        {"frame": 1, "pose": "neutral"},
+        {"frame": 18, "pose": "crouch"},
+        {"frame": 30, "pose": "up"},
+        {"frame": 42, "pose": "neutral"},
+        {"frame": 60, "pose": "crouch"},
+        {"frame": 72, "pose": "up"},
+        {"frame": 84, "pose": "neutral"}
+      ]
+    }
+  }
+}
