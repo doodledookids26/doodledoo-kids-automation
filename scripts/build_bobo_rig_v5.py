@@ -65,10 +65,22 @@ order=['base.png','left_upper_leg.png','right_upper_leg.png','left_lower_leg.png
 prev=Image.new('RGBA',(W,H),(0,0,0,0))
 for n in order: prev.alpha_composite(Image.open(OUT/n))
 prev.save(OUT/'reconstructed_preview.png')
-src=np.array(img).astype(np.int16); rec=np.array(prev).astype(np.int16)
-rgb_err=float(np.abs(src[:,:,:3]-rec[:,:,:3]).mean()); alpha_err=float(np.abs(src[:,:,3]-rec[:,:,3]).mean())
+src=np.array(img).astype(np.int16)
+rec=np.array(prev).astype(np.int16)
+
+# Compare only pixels that are actually visible in the original artwork.
+# Hidden areas are intentionally reconstructed/inpainted and therefore
+# should not be required to have the original RGB values.
+src_visible=src[:,:,3]>16
+rec_visible=rec[:,:,3]>16
+intersection=src_visible & rec_visible
+coverage=float(rec_visible[src_visible].mean()) if np.any(src_visible) else 0.0
+rgb_err=float(np.abs(src[:,:,:3][intersection]-rec[:,:,:3][intersection]).mean()) if np.any(intersection) else 999.0
+alpha_err=float(np.abs(src[:,:,3].astype(np.int16)-rec[:,:,3].astype(np.int16))[src_visible].mean()) if np.any(src_visible) else 999.0
+
 spec=json.loads((ROOT/'config/bobo_rig_spec.json').read_text())
-manifest={'character':'Bobo the Bear','rig_type':'automated_2d_joint_rig_v5','source':'assets/characters/bobo.png','canvas':[W,H],'layers':order,'joint_targets':spec['joint_targets_1024x1536'],'reconstruction_check':{'mean_rgb_error':round(rgb_err,4),'mean_alpha_error':round(alpha_err,4)},'quality_gate':{'source_reconstructed':rgb_err<3 and alpha_err<3,'visual_review_required':True}}
+manifest={'character':'Bobo the Bear','rig_type':'automated_2d_joint_rig_v5','source':'assets/characters/bobo.png','canvas':[W,H],'layers':order,'joint_targets':spec['joint_targets_1024x1536'],'reconstruction_check':{'visible_coverage':round(coverage,6),'visible_rgb_error':round(rgb_err,4),'visible_alpha_error':round(alpha_err,4)},'quality_gate':{'source_reconstructed':coverage>=0.995 and rgb_err<3.0 and alpha_err<3.0,'visual_review_required':True}}
 (OUT/'rig_manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
 print(json.dumps(manifest['reconstruction_check']))
+
 if not manifest['quality_gate']['source_reconstructed']: raise SystemExit('QUALITY_GATE_FAILED')
