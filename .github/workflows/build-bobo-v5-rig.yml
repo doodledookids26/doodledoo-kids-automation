@@ -20,6 +20,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install Pillow opencv-python-headless
 
+      - name: Prepare exact reconstruction masks
+        run: python scripts/patch_bobo_rig_v5_exact.py
+
       - name: Build Bobo V5 transparent layers
         run: python scripts/build_bobo_rig_v5.py
 
