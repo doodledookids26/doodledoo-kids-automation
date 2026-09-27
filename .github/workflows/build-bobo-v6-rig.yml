@@ -1,0 +1,56 @@
+name: Build Bobo V6 Joint-Safe Rig
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/build_bobo_rig_v5.py"
+      - "scripts/patch_bobo_rig_v5_exact.py"
+      - "scripts/build_bobo_joint_safe_rig.py"
+      - "scripts/render_bobo_v6_animation_test.py"
+      - "config/bobo_rig_spec.json"
+      - "assets/characters/bobo.png"
+
+jobs:
+  build-rig:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow opencv-python-headless
+
+      - name: Prepare exact reconstruction masks
+        run: python scripts/patch_bobo_rig_v5_exact.py
+
+      - name: Build Bobo V5 transparent layers
+        run: python scripts/build_bobo_rig_v5.py
+
+      - name: Build Bobo V6 joint-safe rig
+        run: python scripts/build_bobo_joint_safe_rig.py
+
+      - name: Render hierarchical animation test
+        run: python scripts/render_bobo_v6_animation_test.py
+
+      - name: Verify V6 outputs
+        run: |
+          test -f output/bobo_rig_v6/reconstructed_preview.png
+          test -f output/bobo_rig_v6/rig_manifest.json
+          test -f output/bobo_rig_v6/hip_shorts.png
+          test -f output/bobo_v6_animation_test.mp4
+
+      - name: Upload Bobo V6 rig and animation test
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-v6-joint-safe-rig
+          path: |
+            output/bobo_rig_v6/
+            output/bobo_v6_animation_test.mp4
