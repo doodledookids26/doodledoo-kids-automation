@@ -134,7 +134,11 @@ def add_directed_overlap(name):
     out_rgb = im[:, :, :3].copy()
     hidden_fill = target & (~visible)
     out_rgb[hidden_fill] = rgb[hidden_fill]
-    out_alpha = target.astype(np.uint8) * 255
+
+    # Preserve the V5 antialiased alpha on every existing visible pixel.
+    # Only synthesized hidden joint overlap becomes fully opaque.
+    out_alpha = im[:, :, 3].copy()
+    out_alpha[hidden_fill] = 255
     out = np.dstack([out_rgb, out_alpha])
     Image.fromarray(out.astype(np.uint8)).save(OUT / name)
     layers[name] = out.astype(np.uint8)
