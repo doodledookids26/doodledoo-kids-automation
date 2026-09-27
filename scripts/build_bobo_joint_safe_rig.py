@@ -215,6 +215,17 @@ manifest = {
     },
 }
 (OUT / "rig_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+# Diagnostics: localize the V6 alpha regression before the quality gate.
+blue_visible = blue & visible
+nonblue_visible = visible & (~blue)
+def mean_alpha(mask):
+    return float(np.abs(src16[:, :, 3] - rec16[:, :, 3])[mask].mean()) if np.any(mask) else 0.0
+print(json.dumps({
+    "alpha_error_blue_region": round(mean_alpha(blue_visible), 4),
+    "alpha_error_nonblue_region": round(mean_alpha(nonblue_visible), 4),
+    "blue_visible_pixels": int(blue_visible.sum()),
+    "nonblue_visible_pixels": int(nonblue_visible.sum()),
+}))
 print(json.dumps(manifest["reconstruction_check"]))
 if not manifest["quality_gate"]["rest_pose_reconstructed"]:
     raise SystemExit("V6 REST-POSE QUALITY GATE FAILED")
