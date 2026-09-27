@@ -36,16 +36,19 @@ joint = {k: tuple(v) for k, v in spec["joint_targets_1024x1536"].items()}
 hsv = cv2.cvtColor(src[:, :, :3], cv2.COLOR_RGB2HSV)
 yy, xx = np.indices((H, W))
 
-shorts = (
+shorts_mask = (
     (hsv[:, :, 0] >= 98) & (hsv[:, :, 0] <= 115) &
     (hsv[:, :, 1] > 70) & (hsv[:, :, 2] > 50) &
     (yy > 1050) & (yy < 1380) & (xx > 150) & (xx < 870)
-).astype(np.uint8) * 255
-shorts = cv2.morphologyEx(shorts, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
-shorts = cv2.dilate(shorts, np.ones((3, 3), np.uint8), iterations=1)
+).astype(np.uint8)
+shorts_mask = cv2.morphologyEx(shorts_mask, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
+shorts_mask = cv2.dilate(shorts_mask, np.ones((3, 3), np.uint8), iterations=1).astype(bool)
 
-shorts_rgba = np.dstack([src[:, :, :3], shorts])
-Image.fromarray(shorts_rgba.astype(np.uint8)).save(OUT / "hip_shorts.png")
+# Preserve the source's antialiased alpha instead of turning the clothing
+# into a fully opaque binary mask. This keeps the V6 rest pose faithful to V5.
+shorts_alpha = np.where(shorts_mask, src[:, :, 3], 0).astype(np.uint8)
+shorts_rgba = np.dstack([src[:, :, :3], shorts_alpha])
+Image.fromarray(shorts_rgba).save(OUT / "hip_shorts.png")
 
 layers = {}
 for name in required_v5:
@@ -53,7 +56,7 @@ for name in required_v5:
 
 for name in ("left_upper_leg.png", "right_upper_leg.png"):
     a = layers[name][:, :, 3]
-    layers[name][:, :, 3] = np.where(shorts > 16, 0, a).astype(np.uint8)
+    layers[name][:, :, 3] = np.where(shorts_mask, 0, a).astype(np.uint8)
 
 parent_for_overlap = {
     "head.png": "torso.png",
@@ -103,12 +106,10 @@ def add_directed_overlap(name):
     disk = ((xx - px) ** 2 + (yy - py) ** 2 <= r * r)
 
     if parent_for_overlap[name] == "hip_shorts.png":
-        parent_alpha = shorts > 16
+        parent_alpha = shorts_alpha > 16
     else:
         parent_alpha = layers[parent_for_overlap[name]][:, :, 3] > 16
 
-    # Only add hidden overlap where the original source is transparent.
-    # Never overwrite source-visible pixels in the reconstructed rest pose.
     source_visible = src[:, :, 3] > 16
     target = visible | (disk & parent_alpha & (~source_visible))
 
