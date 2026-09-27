@@ -56,7 +56,7 @@ def composite_rgba(canvas, layer):
 
 for i in range(frames):
     t = i / fps
-    canvas = layers["base.png"].copy()
+    canvas = layers["base"].copy()
 
     left_arm = 0.0
     right_arm = 0.0
