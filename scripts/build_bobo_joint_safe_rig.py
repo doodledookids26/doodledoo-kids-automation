@@ -119,8 +119,7 @@ def add_directed_overlap(name):
     else:
         parent_alpha = layers[parent_for_overlap[name]][:, :, 3] > 16
 
-    target = visible | (disk & parent_alpha)
-
+    # Only add hidden overlap where the original source is transparent.\n    # Never let an articulation patch overwrite source-visible pixels in the\n    # reconstructed rest pose; those pixels must remain exact.\n    source_visible = src[:, :, 3] > 16\n    target = visible | (disk & parent_alpha & (~source_visible))\n
     # Propagate the nearest visible pixel's RGB into the small hidden region.
     # This produces a texture-consistent continuation without inventing a
     # broad halo outside the parent overlap.
