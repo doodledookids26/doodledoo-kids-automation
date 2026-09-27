@@ -137,7 +137,13 @@ def add_directed_overlap(name):
     source_flat = flat_rgb[visible_points]
     rgb = source_flat[labels]
 
-    out = np.dstack([rgb, (target.astype(np.uint8) * 255)])
+    # Preserve every original visible pixel exactly. Only synthesize RGB
+    # inside the newly added hidden overlap region.
+    out_rgb = im[:, :, :3].copy()
+    hidden_fill = target & (~visible)
+    out_rgb[hidden_fill] = rgb[hidden_fill]
+    out_alpha = (target.astype(np.uint8) * 255)
+    out = np.dstack([out_rgb, out_alpha])
     Image.fromarray(out.astype(np.uint8)).save(OUT / name)
     layers[name] = out.astype(np.uint8)
 
