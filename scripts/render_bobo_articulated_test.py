@@ -20,7 +20,7 @@ for name in required:
         raise FileNotFoundError(f"Missing rig layer: {name}")
 
 layers = {name[:-4]: cv2.imread(str(RIG / name), cv2.IMREAD_UNCHANGED) for name in required}
-h, w = layers["base.png"].shape[:2]
+h, w = layers["base"].shape[:2]
 fps = int(plan["fps"])
 frames = fps * 8
 
