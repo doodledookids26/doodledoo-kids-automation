@@ -174,10 +174,11 @@ for name in static_names:
 # Wave pose: left arm raises as one chain, then bends at the elbow.
 def make_frame(frame_no):
     t = frame_no / 24.0
-    phase = 2.0 * math.pi * t / 1.6
-    upper_deg = -48.0 + 7.0*math.sin(phase)
-    elbow_rel = -28.0 + 34.0*math.sin(phase)
-    hand_deg = 10.0*math.sin(2.0*phase)
+    phase = 2.0 * math.pi * t / 2.0
+    motion = 0.5 - 0.5*math.cos(phase)
+    upper_deg = -48.0 * motion
+    elbow_rel = 30.0 * math.sin(phase)
+    hand_deg = 12.0 * math.sin(2.0*phase)
 
     sh = joint["left_shoulder"]
     el = joint["left_elbow"]
