@@ -1,0 +1,55 @@
+name: Build Bobo V8 Mesh Wave Validation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/build_bobo_v8_mesh_wave_rig.py"
+      - "scripts/build_bobo_joint_safe_rig.py"
+      - "scripts/build_bobo_rig_v5.py"
+      - "scripts/patch_bobo_rig_v5_exact.py"
+      - "config/bobo_rig_spec.json"
+      - "assets/characters/bobo.png"
+
+jobs:
+  build-wave:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow opencv-python-headless
+
+      - name: Prepare exact reconstruction masks
+        run: python scripts/patch_bobo_rig_v5_exact.py
+
+      - name: Build V5 source layers
+        run: python scripts/build_bobo_rig_v5.py
+
+      - name: Build V6 source rig
+        run: python scripts/build_bobo_joint_safe_rig.py
+
+      - name: Build V8 mesh Wave validation
+        run: python scripts/build_bobo_v8_mesh_wave_rig.py
+
+      - name: Verify V8 outputs
+        run: |
+          test -f output/bobo_rig_v8/rig_manifest.json
+          test -f output/bobo_rig_v8/rest_pose_preview.png
+          test -f output/bobo_v8_mesh_wave_test.mp4
+
+      - name: Upload V8 mesh validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-v8-mesh-wave-validation
+          path: |
+            output/bobo_rig_v8/
+            output/bobo_v8_mesh_wave_test.mp4
