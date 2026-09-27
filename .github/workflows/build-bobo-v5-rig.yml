@@ -1,0 +1,38 @@
+name: Build Bobo V5 Rig Layers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-rig:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow opencv-python-headless
+
+      - name: Build Bobo V5 transparent layers
+        run: python scripts/build_bobo_rig_v5.py
+
+      - name: Verify required rig layers
+        run: |
+          test -f output/bobo_rig_v5/reconstructed_preview.png
+          test -f output/bobo_rig_v5/rig_manifest.json
+          for f in             head.png left_ear.png right_ear.png eyes.png mouth.png torso.png             left_upper_arm.png left_lower_arm.png left_hand.png             right_upper_arm.png right_lower_arm.png right_hand.png             left_upper_leg.png left_lower_leg.png left_foot.png             right_upper_leg.png right_lower_leg.png right_foot.png; do
+            test -f "output/bobo_rig_v5/$f"
+          done
+
+      - name: Upload Bobo V5 rig
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-v5-rig-layers
+          path: output/bobo_rig_v5/
