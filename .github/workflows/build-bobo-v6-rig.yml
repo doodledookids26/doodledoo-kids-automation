@@ -11,6 +11,7 @@ on:
       - "config/bobo_rig_spec.json"
       - "assets/characters/bobo.png"
 
+# V6 is the automated continuation of the V5 transparent-layer rig.
 jobs:
   build-rig:
     runs-on: ubuntu-latest
