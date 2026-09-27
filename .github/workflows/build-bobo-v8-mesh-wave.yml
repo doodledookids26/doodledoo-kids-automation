@@ -53,3 +53,5 @@ jobs:
           path: |
             output/bobo_rig_v8/
             output/bobo_v8_mesh_wave_test.mp4
+
+# V8 validation trigger
