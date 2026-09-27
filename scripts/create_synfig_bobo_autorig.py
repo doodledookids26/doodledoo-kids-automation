@@ -150,12 +150,12 @@ def build(template, output):
         )
         first = ET.SubElement(pair, "first")
         first.append(ET.Element(
-            "bone_valuenode",
+            "bone",
             {"type": "bone_object", "guid": rest_guid},
         ))
         second = ET.SubElement(pair, "second")
         second.append(ET.Element(
-            "bone_valuenode",
+            "bone",
             {"type": "bone_object", "guid": pose_guid},
         ))
 
