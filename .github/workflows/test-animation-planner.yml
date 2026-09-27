@@ -1,0 +1,44 @@
+name: Test Bobo Animation Planner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-animation-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate animation plan
+        run: python scripts/generate_animation_plan.py
+
+      - name: Verify animation plan
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path("output/DDK001_bobo_animation_plan.json")
+          assert p.exists(), "Animation plan was not created"
+
+          data = json.loads(p.read_text(encoding="utf-8"))
+          names = [a["name"] for a in data["animations"]]
+
+          assert data["character"] == "Bobo"
+          assert {"idle", "wave", "bounce"} <= set(names)
+
+          print("Animation planner OK")
+          print("Presets:", ", ".join(names))
+          PY
+
+      - name: Upload animation plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-animation-plan
+          path: output/DDK001_bobo_animation_plan.json
