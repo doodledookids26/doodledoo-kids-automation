@@ -172,7 +172,11 @@ for name in static_names:
         Image.fromarray(layers[name]).save(OUT / name)
 
 # Wave pose: left arm raises as one chain, then bends at the elbow.
+exact_rest = np.array(Image.open(V6 / "reconstructed_preview.png").convert("RGBA"))
+
 def make_frame(frame_no):
+    if frame_no == 0:
+        return exact_rest.copy()
     t = frame_no / 24.0
     phase = 2.0 * math.pi * t / 2.0
     motion = 0.5 - 0.5*math.cos(phase)
