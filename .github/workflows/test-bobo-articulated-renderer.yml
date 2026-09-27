@@ -1,0 +1,44 @@
+name: Test Bobo Articulated Renderer
+
+on:
+  workflow_dispatch:
+
+jobs:
+  render-articulated-bobo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install opencv-python-headless numpy Pillow
+
+      - name: Generate animation plan
+        run: python scripts/generate_animation_plan.py
+
+      - name: Build Stage-2 Bobo layers
+        run: python scripts/build_bobo_rig_stage2.py
+
+      - name: Render articulated test
+        run: python scripts/render_bobo_articulated_test.py
+
+      - name: Verify output
+        run: |
+          test -s output/DDK001_bobo_articulated_test.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 output/DDK001_bobo_articulated_test.mp4
+          echo "Articulated Bobo test produced a video."
+
+      - name: Upload articulated test
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-articulated-renderer-test
+          path: output/DDK001_bobo_articulated_test.mp4
