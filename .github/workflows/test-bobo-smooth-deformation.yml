@@ -1,0 +1,41 @@
+name: Test Bobo Smooth Deformation Renderer
+
+on:
+  workflow_dispatch:
+
+jobs:
+  render-smooth-deformation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install opencv-python-headless numpy
+
+      - name: Generate animation plan
+        run: python scripts/generate_animation_plan.py
+
+      - name: Render full-image deformation test
+        run: python scripts/render_bobo_smooth_deformation_test.py
+
+      - name: Verify output
+        run: |
+          test -s output/DDK001_bobo_smooth_deformation_test.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 output/DDK001_bobo_smooth_deformation_test.mp4
+          echo "Smooth full-image deformation test produced a video."
+
+      - name: Upload deformation test
+        uses: actions/upload-artifact@v4
+        with:
+          name: bobo-smooth-deformation-test
+          path: output/DDK001_bobo_smooth_deformation_test.mp4
