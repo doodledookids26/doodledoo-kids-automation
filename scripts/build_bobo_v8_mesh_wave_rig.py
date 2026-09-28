@@ -65,7 +65,6 @@ def segment_warp(im, src_a, src_b, dst_a, dst_b, pad=60):
     if len(xs) == 0:
         return im.copy()
 
-    # Width of the source artwork around the segment.
     pts = np.stack([xs, ys], axis=1).astype(np.float32)
     rel = pts - src_a
     t0 = np.clip((rel @ su) / sl, 0.0, 1.0)
@@ -84,8 +83,6 @@ def segment_warp(im, src_a, src_b, dst_a, dst_b, pad=60):
     along = t * dl
     n = p[..., 0]*dn[0] + p[..., 1]*dn[1]
 
-    # Smooth endpoint blending keeps the joint from shearing abruptly.
-    edge = np.clip(np.minimum(t, 1.0-t) * 8.0, 0.0, 1.0)
     src_xy = src_a[None,None,:] + t[...,None] * sv[None,None,:] + n[...,None] * sn[None,None,:]
 
     map_x = src_xy[...,0].astype(np.float32)
@@ -95,7 +92,6 @@ def segment_warp(im, src_a, src_b, dst_a, dst_b, pad=60):
 
     dist = np.abs(n)
     support = np.clip((half_width + 4.0 - dist) / 8.0, 0.0, 1.0)
-    # Preserve source alpha shape; the support mask only limits the destination.
     warped[:, :, 3] = np.clip(warped[:, :, 3].astype(np.float32) * support, 0, 255).astype(np.uint8)
 
     out = np.zeros_like(im)
@@ -110,9 +106,6 @@ def rigid_warp(im, pivot, deg):
     return cv2.warpAffine(im, M, (W,H), flags=cv2.INTER_LINEAR,
                           borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0,0))
 
-# Extract the two yellow sleeve regions from the original artwork. The connected
-# components are spatially constrained to the shoulder zones, avoiding the body
-# of the shirt. The static torso is cut by exactly the same mask.
 hsv = cv2.cvtColor(src[:, :, :3], cv2.COLOR_RGB2HSV)
 yellow = (
     (hsv[:,:,0] >= 15) & (hsv[:,:,0] <= 35) &
@@ -127,7 +120,7 @@ def shoulder_sleeve(side):
     else:
         x0,x1,y0,y1 = 555, 860, 675, 950
         shoulder = tuple(joint["right_shoulder"].astype(int))
-    roi = (yellow[y0:y1, x0:x1]).astype(np.uint8)
+    roi = yellow[y0:y1, x0:x1].astype(np.uint8)
     n, lab, stats, cents = cv2.connectedComponentsWithStats(roi, 8)
     if n <= 1:
         raise RuntimeError(f"Could not find {side} sleeve component")
@@ -153,12 +146,9 @@ def shoulder_sleeve(side):
 left_sleeve, left_sleeve_mask = shoulder_sleeve("left")
 right_sleeve, right_sleeve_mask = shoulder_sleeve("right")
 
-# Static torso with sleeve pixels removed. This prevents a rigid yellow sleeve from
-# being left behind when the arm is raised.
 torso = layers["torso.png"].copy()
 torso[:,:,3] = np.where(left_sleeve_mask | right_sleeve_mask, 0, torso[:,:,3]).astype(np.uint8)
 
-# Copy all non-deforming layers first.
 static_names = [
     "base.png","torso.png","hip_shorts.png",
     "left_upper_leg.png","right_upper_leg.png","left_lower_leg.png","right_lower_leg.png",
@@ -171,7 +161,6 @@ for name in static_names:
     else:
         Image.fromarray(layers[name]).save(OUT / name)
 
-# Wave pose: left arm raises as one chain, then bends at the elbow.
 exact_rest = np.array(Image.open(V6 / "reconstructed_preview.png").convert("RGBA"))
 
 def make_frame(frame_no):
@@ -191,15 +180,11 @@ def make_frame(frame_no):
     posed_el = rot_point(el, sh, upper_deg)
     posed_wr = rot_point(wr, el, upper_deg + elbow_rel)
 
-    # Upper arm follows shoulder->elbow.
     ua = segment_warp(layers["left_upper_arm.png"], sh, el, sh, posed_el)
     la = segment_warp(layers["left_lower_arm.png"], el, wr, posed_el, posed_wr)
     hand = rigid_warp(layers["left_hand.png"], posed_wr, hand_deg)
-
-    # Sleeve follows the upper-arm mesh, using the same shoulder/elbow path.
     sleeve = segment_warp(left_sleeve, sh, el, sh, posed_el)
 
-    # Right arm remains in a stable rest pose.
     rua = layers["right_upper_arm.png"]
     rla = layers["right_lower_arm.png"]
     rhand = layers["right_hand.png"]
@@ -220,7 +205,6 @@ def make_frame(frame_no):
         )
         canvas = rgba_over(canvas, im)
 
-    # Sleeves sit over the top of the brown upper arm at the shoulder seam.
     canvas = rgba_over(canvas, sleeve)
     canvas = rgba_over(canvas, right_sleeve)
     return canvas
@@ -230,7 +214,6 @@ writer = cv2.VideoWriter(str(out_mp4), cv2.VideoWriter_fourcc(*"mp4v"), 24, (W,H
 if not writer.isOpened():
     raise RuntimeError("Could not open V8 output")
 
-# Rest-pose reconstruction is measured before animation.
 rest = make_frame(0)
 src16 = src.astype(np.int16)
 rest16 = rest.astype(np.int16)
@@ -259,6 +242,10 @@ for frame_no in range(96):
 
 writer.release()
 
+sh_manifest = joint["left_shoulder"]
+el_manifest = joint["left_elbow"]
+wr_manifest = joint["left_wrist"]
+
 manifest = {
     "character":"Bobo the Bear",
     "rig_type":"automated_2d_mesh_strip_deformation_v8",
@@ -276,9 +263,9 @@ manifest = {
         "head":["head.png","left_ear.png","right_ear.png","eyes.png","mouth.png"]
     },
     "controls":{
-        "left_shoulder":[int(x) for x in sh],
-        "left_elbow_rest":[int(x) for x in el],
-        "left_wrist_rest":[int(x) for x in wr]
+        "left_shoulder":[int(x) for x in sh_manifest],
+        "left_elbow_rest":[int(x) for x in el_manifest],
+        "left_wrist_rest":[int(x) for x in wr_manifest]
     },
     "quality_gate":{
         "rest_pose_reconstructed":True,
