@@ -1,15 +1,17 @@
-name: Build Bobo V8 Mesh Wave Validation
+name: Build Bobo V9 Articulated Wave Validation
 
 on:
   workflow_dispatch:
   push:
     paths:
+      - "scripts/build_bobo_v9_articulated_wave_rig.py"
       - "scripts/build_bobo_v8_mesh_wave_rig.py"
       - "scripts/build_bobo_joint_safe_rig.py"
       - "scripts/build_bobo_rig_v5.py"
       - "scripts/patch_bobo_rig_v5_exact.py"
       - "config/bobo_rig_spec.json"
       - "assets/characters/bobo.png"
+      - ".github/workflows/build-bobo-v8-mesh-wave.yml"
 
 jobs:
   build-wave:
@@ -37,21 +39,19 @@ jobs:
       - name: Build V6 source rig
         run: python scripts/build_bobo_joint_safe_rig.py
 
-      - name: Build V8 mesh Wave validation
-        run: python scripts/build_bobo_v8_mesh_wave_rig.py
+      - name: Build V9 articulated Wave validation
+        run: python scripts/build_bobo_v9_articulated_wave_rig.py
 
-      - name: Verify V8 outputs
+      - name: Verify V9 outputs
         run: |
-          test -f output/bobo_rig_v8/rig_manifest.json
-          test -f output/bobo_rig_v8/rest_pose_preview.png
-          test -f output/bobo_v8_mesh_wave_test.mp4
+          test -f output/bobo_rig_v9/rig_manifest.json
+          test -f output/bobo_rig_v9/rest_pose_preview.png
+          test -f output/bobo_v9_wave_test.mp4
 
-      - name: Upload V8 mesh validation
+      - name: Upload V9 validation
         uses: actions/upload-artifact@v4
         with:
-          name: bobo-v8-mesh-wave-validation
+          name: bobo-v9-articulated-wave-validation
           path: |
-            output/bobo_rig_v8/
-            output/bobo_v8_mesh_wave_test.mp4
-
-# V8 validation trigger: manifest scope fix
+            output/bobo_rig_v9/
+            output/bobo_v9_wave_test.mp4
