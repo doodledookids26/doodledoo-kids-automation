@@ -45,14 +45,33 @@ def over(dst, im):
 # The V6 upper-arm layer already contains the yellow sleeve + bear arm.
 # Do NOT create a second sleeve from a color threshold. That was the source
 # of the large cyan bars in V8.
-torso = layers["torso.png"].copy()
+# The torso must remain a continuous shirt surface underneath the arm.
+# V9.1 builds a reconstructed shirt underlay instead of cutting the shirt to
+# transparent pixels (the old cut created white wedges during the wave).
+torso_source = layers["torso.png"].copy()
 left_arm_cut = np.array([
     [185, 650], [380, 650], [430, 735], [410, 835],
     [360, 925], [245, 945], [185, 855], [195, 735]
 ], np.int32)
 mask = np.zeros((H,W), np.uint8)
 cv2.fillPoly(mask, [left_arm_cut], 255)
-torso[:,:,3] = np.where(mask > 0, 0, torso[:,:,3]).astype(np.uint8)
+
+# Fill only pixels that actually belong to the shirt layer.  Telea inpainting
+# keeps the local yellow fabric texture continuous across the hidden sleeve
+# area.  Outside the original shirt alpha we keep transparency.
+shirt_rgb = torso_source[:,:,:3].copy()
+shirt_hole = ((mask > 0) & (torso_source[:,:,3] > 16)).astype(np.uint8) * 255
+if np.any(shirt_hole):
+    shirt_rgb = cv2.inpaint(shirt_rgb, shirt_hole, 11, cv2.INPAINT_TELEA)
+under_shirt = torso_source.copy()
+under_shirt[:,:,:3] = shirt_rgb
+# The reconstructed underlay is only used inside the arm socket.
+under_shirt[:,:,3] = np.where(mask > 0, torso_source[:,:,3], 0).astype(np.uint8)
+
+# The visible torso layer is the original shirt with the movable sleeve region
+# removed; under_shirt restores that area behind the moving arm.
+torso = torso_source.copy()
+torso[:,:,3] = np.where(mask > 0, 0, torso_source[:,:,3]).astype(np.uint8)
 
 # Keep the static artwork in a standalone rig folder for inspection.
 for n, im in layers.items():
@@ -60,6 +79,7 @@ for n, im in layers.items():
         Image.fromarray(torso).save(OUT/n)
     else:
         Image.fromarray(im).save(OUT/n)
+Image.fromarray(under_shirt).save(OUT/"left_arm_under_shirt.png")
 
 static_order = [
     "base.png","torso.png","hip_shorts.png",
@@ -70,16 +90,45 @@ static_order = [
     "head.png","left_ear.png","right_ear.png","eyes.png","mouth.png"
 ]
 
-def compose(upper_deg, lower_abs_deg, hand_abs_deg):
-    ua = rotate_rgba(layers["left_upper_arm.png"], joint["left_shoulder"], upper_deg)
-    # Lower arm uses its own elbow pivot; absolute angle is relative to its
-    # original artwork orientation, so the joint remains a true parent socket.
-    la = rotate_rgba(layers["left_lower_arm.png"], joint["left_elbow"], lower_abs_deg)
-    hand = rotate_rgba(layers["left_hand.png"], joint["left_wrist"], hand_abs_deg)
+def rotate_affine(im, M):
+    return cv2.warpAffine(im, M, (W,H), flags=cv2.INTER_LINEAR,
+                          borderMode=cv2.BORDER_CONSTANT,
+                          borderValue=(0,0,0,0))
+
+def rotation_about(pivot, deg):
+    px, py = map(float, pivot)
+    a = math.radians(float(deg))
+    c, s = math.cos(a), math.sin(a)
+    return np.array([[c, -s, px - c*px + s*py],
+                     [s,  c, py - s*px - c*py]], np.float32)
+
+def affine3(M):
+    return np.vstack([M, [0,0,1]]).astype(np.float32)
+
+def compose(upper_deg, elbow_local_deg, wrist_local_deg):
+    # True hierarchy:
+    # shoulder -> upper arm -> elbow -> lower arm -> wrist -> hand.
+    # Every child receives its parent's transform first, then its own local
+    # rotation around the transformed joint.  This keeps the elbow and wrist
+    # sockets attached during the wave instead of rotating children in place.
+    M_upper = rotation_about(joint["left_shoulder"], upper_deg)
+    ua = rotate_affine(layers["left_upper_arm.png"], M_upper)
+
+    sh3 = affine3(M_upper)
+    elbow_world = (sh3 @ np.array([*joint["left_elbow"],1], np.float32))[:2]
+    M_elbow_local = rotation_about(elbow_world, elbow_local_deg)
+    M_lower = affine3(M_elbow_local) @ sh3
+    la = rotate_affine(layers["left_lower_arm.png"], M_lower[:2])
+
+    wrist_world = (M_lower @ np.array([*joint["left_wrist"],1], np.float32))[:2]
+    M_wrist_local = rotation_about(wrist_world, wrist_local_deg)
+    M_hand = affine3(M_wrist_local) @ M_lower
+    hand = rotate_affine(layers["left_hand.png"], M_hand[:2])
 
     canvas = np.zeros((H,W,4), np.uint8)
     for n in static_order:
         canvas = over(canvas, torso if n=="torso.png" else layers[n])
+    canvas = over(canvas, under_shirt)
     canvas = over(canvas, ua)
     canvas = over(canvas, la)
     canvas = over(canvas, hand)
@@ -95,9 +144,11 @@ def frame_rgba(i):
     raise_amt = 58.0 * (0.5 - 0.5*math.cos(phase))
     wave = 18.0 * math.sin(3*phase) * (0.25 + 0.75*(0.5 - 0.5*math.cos(phase)))
     upper = raise_amt
-    lower = raise_amt + wave
-    hand = raise_amt + 8.0*math.sin(5*phase)
-    return compose(upper, lower, hand)
+    # Local elbow bend is deliberately smaller than the parent shoulder lift.
+    # This produces a natural wave arc while preserving the joint connection.
+    elbow_local = 10.0 * math.sin(3*phase) * (0.25 + 0.75*(0.5 - 0.5*math.cos(phase))) + wave
+    wrist_local = 8.0 * math.sin(5*phase) * (0.25 + 0.75*(0.5 - 0.5*math.cos(phase)))
+    return compose(upper, elbow_local, wrist_local)
 
 rest = frame_rgba(0)
 sv = src[:,:,3] > 16
@@ -134,11 +185,12 @@ writer.release()
 
 manifest = {
     "character":"Bobo the Bear",
-    "rig_type":"automated_2d_articulated_rigid_puppet_v9",
+    "rig_type":"automated_2d_articulated_rigid_puppet_v9_1",
     "source":"assets/characters/bobo.png",
     "canvas":[W,H],
     "validation_motion":"left_arm_raise_wave_return",
     "production_status":"wave_validation_only",
+    "revision":"v9.1_reconstructed_shirt_and_true_hierarchy",
     "important_fix":"V6 arm layers include the original yellow sleeve; no synthetic sleeve extraction is used.",
     "video_color_pipeline":"RGB_to_BGR_before_OpenCV_VideoWriter",
     "hierarchy":{
