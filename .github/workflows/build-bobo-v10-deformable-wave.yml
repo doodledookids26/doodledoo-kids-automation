@@ -1,0 +1,45 @@
+name: Build Bobo V10 Deformable Rig & Wave Animation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy opencv-python pillow scipy imageio
+
+      - name: Reconstruct Hidden Geometry (Step 1)
+        run: |
+          python scripts/build_bobo_hidden_geometry.py
+
+      - name: Render V10 Deformable Wave Animation (Step 2 & 3)
+        run: |
+          python scripts/build_bobo_deformable_rig.py
+
+      - name: Validate Rig & Video Outputs (Step 4)
+        run: |
+          python scripts/validate_bobo_rig.py
+
+      - name: Upload Output Artifacts
+        uses: actions/upload-artifacts@v4
+        with:
+          name: bobo-v10-deformable-rig
+          path: |
+            output/bobo_rig_final/
+            output/bobo_rig_v10_assets/
+            output/validation/
