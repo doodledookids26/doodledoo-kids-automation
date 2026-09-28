@@ -36,7 +36,7 @@ jobs:
           python scripts/validate_bobo_rig.py
 
       - name: Upload Output Artifacts
-        uses: actions/upload-artifacts@v4
+        uses: actions/upload-artifact@v4
         with:
           name: bobo-v10-deformable-rig
           path: |
