@@ -55,3 +55,5 @@ jobs:
           path: |
             output/bobo_rig_v9/
             output/bobo_v9_wave_test.mp4
+
+# V9.1 validation trigger: reconstructed shirt socket + true child transforms.
